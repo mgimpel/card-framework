@@ -60,7 +60,7 @@ var sensor_outline_visible := false:
 
 # Core drop zone configuration and state
 ## Array of accepted draggable object types (e.g., ["card", "token"])
-var accept_types: Array = []
+var accept_types: Array[String] = []
 ## Original sensor size for restoration after dynamic changes
 var stored_sensor_size: Vector2
 ## Original sensor position for restoration after dynamic changes  
@@ -74,20 +74,20 @@ var sensor: Control
 ## Debug outline for visual sensor boundary indication
 var sensor_outline: ReferenceRect
 ## Array of partition outline controls for debugging
-var sensor_partition_outlines: Array = []
+var sensor_partition_outlines: Array[ReferenceRect] = []
 
 # Partitioning system for precise drop targeting
 ## Global vertical lines to divide sensing partitions (left to right direction)
-var vertical_partition: Array
+var vertical_partition: Array[float]
 ## Global horizontal lines to divide sensing partitions (up to down direction)
-var horizontal_partition: Array
+var horizontal_partition: Array[float]
 
 
 ## Initializes the drop zone with parent reference and accepted drag types.
 ## Creates sensor and debugging UI components.
 ## @param _parent: Container that owns this drop zone
 ## @param accept_types: Array of draggable object types this zone accepts
-func init(_parent: Node, accept_types: Array =[]):
+func init(_parent: Node, accept_types: Array[String] = []) -> void:
 	parent = _parent
 	self.accept_types = accept_types
 
@@ -119,8 +119,8 @@ func init(_parent: Node, accept_types: Array =[]):
 ## Checks if the mouse cursor is currently within the drop zone sensor area.
 ## @returns: True if mouse is inside the sensor bounds
 func check_mouse_is_in_drop_zone() -> bool:
-	var mouse_position = get_global_mouse_position()
-	var result = sensor.get_global_rect().has_point(mouse_position)
+	var mouse_position := get_global_mouse_position()
+	var result := sensor.get_global_rect().has_point(mouse_position)
 	return result
 
 
@@ -130,7 +130,7 @@ func check_mouse_is_in_drop_zone() -> bool:
 ## @param _position: Position offset from DropZone origin
 ## @param _texture: Optional texture for sensor visualization
 ## @param _visible: Whether sensor texture is visible (deprecated)
-func set_sensor(_size: Vector2, _position: Vector2, _texture: Texture, _visible: bool):
+func set_sensor(_size: Vector2, _position: Vector2, _texture: Texture, _visible: bool) -> void:
 	sensor_size = _size
 	sensor_position = _position
 	stored_sensor_size = _size
@@ -143,28 +143,28 @@ func set_sensor(_size: Vector2, _position: Vector2, _texture: Texture, _visible:
 ## Used for temporary sensor modifications that can be restored later.
 ## @param _size: New temporary sensor size
 ## @param _position: New temporary sensor position
-func set_sensor_size_flexibly(_size: Vector2, _position: Vector2):
+func set_sensor_size_flexibly(_size: Vector2, _position: Vector2) -> void:
 	sensor_size = _size
 	sensor_position = _position
 
 
 ## Restores sensor to its original size and position from stored values.
 ## Used to undo temporary modifications made by set_sensor_size_flexibly.
-func return_sensor_size():
+func return_sensor_size() -> void:
 	sensor_size = stored_sensor_size
 	sensor_position = stored_sensor_position
 
 
 ## Adjusts sensor position by adding an offset to the stored position.
 ## @param offset: Vector2 offset to add to the original stored position
-func change_sensor_position_with_offset(offset: Vector2):
+func change_sensor_position_with_offset(offset: Vector2) -> void:
 	sensor_position = stored_sensor_position + offset
 
 
 ## Sets vertical partition lines for drop targeting and creates debug outlines.
 ## Vertical partitions divide the sensor into left-right sections for card ordering.
 ## @param positions: Array of global X coordinates for partition lines
-func set_vertical_partitions(positions: Array):
+func set_vertical_partitions(positions: Array[float]) -> void:
 	vertical_partition = positions
 	
 	# Clear existing partition outlines
@@ -174,7 +174,7 @@ func set_vertical_partitions(positions: Array):
 	
 	# Create debug outline for each partition
 	for i in range(vertical_partition.size()):
-		var outline = ReferenceRect.new()
+		var outline := ReferenceRect.new()
 		outline.editor_only = false
 		outline.name = "VerticalPartition" + str(i)
 		outline.z_index = CardFrameworkSettings.VISUAL_OUTLINE_Z_INDEX
@@ -183,28 +183,28 @@ func set_vertical_partitions(positions: Array):
 		outline.size = Vector2(1, sensor.size.y)  # Vertical line full height
 		
 		# Convert global partition position to local coordinates
-		var local_x = vertical_partition[i] - global_position.x
+		var local_x := vertical_partition[i] - global_position.x
 		outline.position = Vector2(local_x, sensor.position.y)
 		outline.visible = sensor_outline.visible
 		add_child(outline)
 		sensor_partition_outlines.append(outline)
 
 
-func set_horizontal_partitions(positions: Array):
+func set_horizontal_partitions(positions: Array[float]) -> void:
 	horizontal_partition = positions
 	# clear existing outlines
 	for outline in sensor_partition_outlines:
 		outline.queue_free()
 	sensor_partition_outlines.clear()
 	for i in range(horizontal_partition.size()):
-		var outline = ReferenceRect.new()
+		var outline := ReferenceRect.new()
 		outline.editor_only = false
 		outline.name = "HorizontalPartition" + str(i)
 		outline.z_index = CardFrameworkSettings.VISUAL_OUTLINE_Z_INDEX
 		outline.border_color = CardFrameworkSettings.DEBUG_OUTLINE_COLOR
 		outline.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		outline.size = Vector2(sensor.size.x, 1)
-		var local_y = horizontal_partition[i] - global_position.y
+		var local_y := horizontal_partition[i] - global_position.y
 		outline.position = Vector2(sensor.position.x, local_y)
 		outline.visible = sensor_outline.visible
 		add_child(outline)
@@ -221,7 +221,7 @@ func get_vertical_layers() -> int:
 	if vertical_partition == null or vertical_partition.is_empty():
 		return -1
 
-	var mouse_position = get_global_mouse_position()
+	var mouse_position := get_global_mouse_position()
 	
 	# Count how many partition lines the mouse has crossed
 	var current_index := 0
@@ -241,7 +241,7 @@ func get_horizontal_layers() -> int:
 	if horizontal_partition == null or horizontal_partition.is_empty():
 		return -1
 
-	var mouse_position = get_global_mouse_position()
+	var mouse_position := get_global_mouse_position()
 	
 	var current_index := 0
 

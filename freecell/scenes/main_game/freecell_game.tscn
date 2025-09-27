@@ -87,30 +87,35 @@ text = "Menu"
 card_factory_scene = ExtResource("4_hp8si")
 
 [node name="Freecell_1" parent="CardManager" instance=ExtResource("2_3jyru")]
+layout_mode = 0
 offset_left = 100.0
 offset_top = 50.0
 offset_right = 100.0
 offset_bottom = 50.0
 
 [node name="Freecell_2" parent="CardManager" instance=ExtResource("2_3jyru")]
+layout_mode = 0
 offset_left = 300.0
 offset_top = 50.0
 offset_right = 300.0
 offset_bottom = 50.0
 
 [node name="Freecell_3" parent="CardManager" instance=ExtResource("2_3jyru")]
+layout_mode = 0
 offset_left = 500.0
 offset_top = 50.0
 offset_right = 500.0
 offset_bottom = 50.0
 
 [node name="Freecell_4" parent="CardManager" instance=ExtResource("2_3jyru")]
+layout_mode = 0
 offset_left = 700.0
 offset_top = 50.0
 offset_right = 700.0
 offset_bottom = 50.0
 
 [node name="Foundation_Heart" parent="CardManager" instance=ExtResource("4_ivlr5")]
+layout_mode = 0
 offset_left = 1120.0
 offset_top = 50.0
 offset_right = 1120.0
@@ -119,6 +124,7 @@ suit = 2
 sensor_texture = ExtResource("7_epxn1")
 
 [node name="Foundation_Spade" parent="CardManager" instance=ExtResource("4_ivlr5")]
+layout_mode = 0
 offset_left = 1320.0
 offset_top = 50.0
 offset_right = 1320.0
@@ -127,6 +133,7 @@ suit = 1
 sensor_texture = ExtResource("8_neli8")
 
 [node name="Foundation_Diamond" parent="CardManager" instance=ExtResource("4_ivlr5")]
+layout_mode = 0
 offset_left = 1520.0
 offset_top = 50.0
 offset_right = 1520.0
@@ -135,6 +142,7 @@ suit = 3
 sensor_texture = ExtResource("9_mghkt")
 
 [node name="Foundation_Club" parent="CardManager" instance=ExtResource("4_ivlr5")]
+layout_mode = 0
 offset_left = 1720.0
 offset_top = 50.0
 offset_right = 1720.0
@@ -143,54 +151,63 @@ suit = 4
 sensor_texture = ExtResource("10_lka7w")
 
 [node name="Tableau_1" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 100.0
 offset_top = 300.0
 offset_right = 100.0
 offset_bottom = 300.0
 
 [node name="Tableau_2" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 331.0
 offset_top = 300.0
 offset_right = 331.0
 offset_bottom = 300.0
 
 [node name="Tableau_3" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 562.0
 offset_top = 300.0
 offset_right = 562.0
 offset_bottom = 300.0
 
 [node name="Tableau_4" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 793.0
 offset_top = 300.0
 offset_right = 793.0
 offset_bottom = 300.0
 
 [node name="Tableau_5" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 1024.0
 offset_top = 300.0
 offset_right = 1024.0
 offset_bottom = 300.0
 
 [node name="Tableau_6" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 1255.0
 offset_top = 300.0
 offset_right = 1255.0
 offset_bottom = 300.0
 
 [node name="Tableau_7" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 1486.0
 offset_top = 300.0
 offset_right = 1486.0
 offset_bottom = 300.0
 
 [node name="Tableau_8" parent="CardManager" instance=ExtResource("7_wmb6j")]
+layout_mode = 0
 offset_left = 1717.0
 offset_top = 300.0
 offset_right = 1717.0
 offset_bottom = 300.0
 
 [node name="StartPosition" parent="CardManager" instance=ExtResource("12_yh0vm")]
+layout_mode = 0
 offset_left = 909.0
 offset_top = 820.0
 offset_right = 909.0

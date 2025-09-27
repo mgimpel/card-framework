@@ -80,8 +80,8 @@ static func get_number_as_string(_number: Number) -> String:
 
 
 static func get_card_name(_suit: Suit, _number: Number) -> String:
-	var suit_str = get_suit_as_string(_suit)
-	var number_str = get_number_as_string(_number)
+	var suit_str := get_suit_as_string(_suit)
+	var number_str := get_number_as_string(_number)
 	return suit_str + "_" + number_str
 
 
@@ -91,9 +91,9 @@ func _init() -> void:
 
 
 func is_next_number(target_card: PlayingCard) -> bool:
-	var current_number = int(number)
-	var target_number = int(target_card.number)
-	var next_number = (current_number % 13) + 1
+	var current_number := int(number)
+	var target_number := int(target_card.number)
+	var next_number := (current_number % 13) + 1
 	return next_number == target_number
 	
 

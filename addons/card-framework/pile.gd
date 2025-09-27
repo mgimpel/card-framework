@@ -60,12 +60,12 @@ enum PileDirection {
 ## Cards are returned in top-to-bottom order (most recent first).
 ## @param n: Number of cards to retrieve from the top
 ## @returns: Array of cards from the top of the pile (limited by available cards)
-func get_top_cards(n: int) -> Array:
-	var arr_size = _held_cards.size()
+func get_top_cards(n: int) -> Array[Card]:
+	var arr_size := _held_cards.size()
 	if n > arr_size:
 		n = arr_size
 	
-	var result = []
+	var result: Array[Card] = []
 	
 	for i in range(n):
 		result.append(_held_cards[arr_size - 1 - i])
@@ -77,7 +77,7 @@ func get_top_cards(n: int) -> Array:
 ## Pressed cards receive elevated z-index to appear above the pile.
 func _update_target_z_index() -> void:
 	for i in range(_held_cards.size()):
-		var card = _held_cards[i]
+		var card := _held_cards[i]
 		if card.is_pressed:
 			card.stored_z_index = CardFrameworkSettings.VISUAL_PILE_Z_INDEX + i
 		else:
@@ -88,10 +88,10 @@ func _update_target_z_index() -> void:
 ## Positions cards according to layout direction and applies interaction restrictions.
 func _update_target_positions() -> void:
 	# Calculate top card position for drop zone alignment
-	var last_index = _held_cards.size() - 1
+	var last_index := _held_cards.size() - 1
 	if last_index < 0:
 		last_index = 0
-	var last_offset = _calculate_offset(last_index)
+	var last_offset := _calculate_offset(last_index)
 	
 	# Align drop zone with top card if enabled
 	if enable_drop_zone and align_drop_zone_with_top_card:
@@ -99,9 +99,9 @@ func _update_target_positions() -> void:
 
 	# Position each card and set interaction state
 	for i in range(_held_cards.size()):
-		var card = _held_cards[i]
-		var offset = _calculate_offset(i)
-		var target_pos = position + offset
+		var card := _held_cards[i]
+		var offset := _calculate_offset(i)
+		var target_pos := position + offset
 		
 		# Set card appearance and position
 		card.show_front = card_face_up
@@ -123,9 +123,9 @@ func _update_target_positions() -> void:
 ## @returns: Vector2 offset from the pile's base position
 func _calculate_offset(index: int) -> Vector2:
 	# Clamp to maximum display limit to prevent visual overflow
-	var actual_index = min(index, max_stack_display - 1)
-	var offset_value = actual_index * stack_display_gap
-	var offset = Vector2()
+	var actual_index := min(index, max_stack_display - 1) as int
+	var offset_value := actual_index * stack_display_gap
+	var offset := Vector2()
 
 	# Apply directional offset based on pile layout
 	match layout:

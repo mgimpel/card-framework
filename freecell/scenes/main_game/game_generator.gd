@@ -2,57 +2,58 @@ class_name GameGenerator
 extends Node
 
 
-func random_generator(game_seed = 1, count = 1) -> Array:
-	var max_int32 = (1 << 31) - 1
+func random_generator(game_seed: int = 1, count: int = 1) -> Array[int]:
+	var max_int32 := (1 << 31) - 1
 	game_seed = game_seed & max_int32
-	var rnd_numbers = []
+	var rnd_numbers: Array[int] = []
 	for i in range(count):
 		game_seed = (game_seed * 214013 + 2531011) & max_int32
 		rnd_numbers.append(game_seed >> 16)
 	return rnd_numbers
 
 
-func deal(game_seed) -> Array:
-	var nc = 52
-	var cards = []
+func deal(game_seed: int) -> Array[int]:
+	var nc := 52
+	var cards: Array[int] = []
 	for i in range(nc - 1, -1, -1):
 		cards.append(i)
-	var rnd_numbers = random_generator(game_seed, nc)
+	var rnd_numbers := random_generator(game_seed, nc)
 	for i in range(nc):
-		var r = rnd_numbers[i]
-		var j = (nc - 1) - r % (nc - i)
-		var temp = cards[i]
+		var r := rnd_numbers[i]
+		var j := (nc - 1) - r % (nc - i)
+		var temp := cards[i]
 		cards[i] = cards[j]
 		cards[j] = temp
 	return cards
 
 
-func generate_cards(cards) -> Array:
-	var results = []
+func generate_cards(cards: Array[int]) -> Array[String]:
+	var results: Array[String] = []
 	for c in cards:
-		var suit = _get_suit(c)
-		var number = _get_number(c)
-		var card_name = PlayingCard.get_card_name(suit, number)
+		var suit := _get_suit(c)
+		var number := _get_number(c)
+		var card_name := PlayingCard.get_card_name(suit, number)
 		results.append(card_name)
 	return results
 
 
-func print_log(cards) -> void:
-	var l = []
-	var numbers = "A23456789TJQK"
-	var suits = "CDHS"
+func print_log(cards: Array[int]) -> void:
+	var l: Array[String] = []
+	var numbers := "A23456789TJQK"
+	var suits := "CDHS"
 	for c in cards:
-		var number = numbers[c / 4]
-		var suit = suits[c % 4]
+		@warning_ignore("integer_division")
+		var number := numbers[c / 4]
+		var suit := suits[c % 4]
 		l.append(number + suit)
 	for i in range(0, l.size(), 8):
-		var line = " ".join(l.slice(i, i + 8))
+		var line := " ".join(l.slice(i, i + 8))
 		print(line)
 
 
 func _get_number(card: int) -> PlayingCard.Number:
 	@warning_ignore("integer_division")
-	var num = card / 4
+	var num := card / 4
 	match num:
 		0: 
 			return PlayingCard.Number._A
@@ -86,7 +87,7 @@ func _get_number(card: int) -> PlayingCard.Number:
 
 
 func _get_suit(card: int) -> PlayingCard.Suit:
-	var num = card % 4
+	var num := card % 4
 	match num:
 		0: 
 			return PlayingCard.Suit.CLUB

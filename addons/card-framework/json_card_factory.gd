@@ -60,7 +60,7 @@ func _ready() -> void:
 		return
 		
 	# Validate that default_card_scene produces Card instances
-	var temp_instance = default_card_scene.instantiate()
+	var temp_instance := default_card_scene.instantiate()
 	if not (temp_instance is Card):
 		push_error("Invalid node type! default_card_scene must reference a Card.")
 		default_card_scene = null
@@ -75,12 +75,12 @@ func _ready() -> void:
 func create_card(card_name: String, target: CardContainer) -> Card:
 	# Use cached data for optimal performance
 	if preloaded_cards.has(card_name):
-		var card_info = preloaded_cards[card_name]["info"]
-		var front_image = preloaded_cards[card_name]["texture"]
+		var card_info: Dictionary[String, String] = preloaded_cards[card_name]["info"]
+		var front_image: Texture2D = preloaded_cards[card_name]["texture"]
 		return _create_card_node(card_info.name, front_image, target, card_info)
 	else:
 		# Load card data on-demand (slower but supports dynamic loading)
-		var card_info = _load_card_info(card_name)
+		var card_info := _load_card_info(card_name)
 		if card_info == null or card_info == {}:
 			push_error("Card info not found for card: %s" % card_name)
 			return null
@@ -91,8 +91,8 @@ func create_card(card_name: String, target: CardContainer) -> Card:
 			return null
 			
 		# Load corresponding image asset
-		var front_image_path = card_asset_dir + "/" + card_info["front_image"]
-		var front_image = _load_image(front_image_path)
+		var front_image_path := card_asset_dir + "/" + card_info["front_image"]
+		var front_image := _load_image(front_image_path)
 		if front_image == null:
 			push_error("Card image not found: %s" % front_image_path)
 			return null
@@ -104,14 +104,14 @@ func create_card(card_name: String, target: CardContainer) -> Card:
 ## Significantly improves card creation performance by eliminating file I/O during gameplay.
 ## Should be called during game initialization or loading screens.
 func preload_card_data() -> void:
-	var dir = DirAccess.open(card_info_dir)
+	var dir := DirAccess.open(card_info_dir)
 	if dir == null:
 		push_error("Failed to open directory: %s" % card_info_dir)
 		return
 
 	# Scan directory for all JSON files
 	dir.list_dir_begin()
-	var file_name = dir.get_next()
+	var file_name := dir.get_next()
 	while file_name != "":
 		# Skip non-JSON files
 		if !file_name.ends_with(".json"):
@@ -119,15 +119,15 @@ func preload_card_data() -> void:
 			continue
 
 		# Extract card name from filename (without .json extension)
-		var card_name = file_name.get_basename()
-		var card_info = _load_card_info(card_name)
+		var card_name := file_name.get_basename()
+		var card_info := _load_card_info(card_name)
 		if card_info == null:
 			push_error("Failed to load card info for %s" % card_name)
 			continue
 
 		# Load corresponding texture asset
-		var front_image_path = card_asset_dir + "/" + card_info.get("front_image", "")
-		var front_image_texture = _load_image(front_image_path)
+		var front_image_path := card_asset_dir + "/" + card_info["front_image"]
+		var front_image_texture := _load_image(front_image_path)
 		if front_image_texture == null:
 			push_error("Failed to load card image: %s" % front_image_path)
 			continue
@@ -145,31 +145,40 @@ func preload_card_data() -> void:
 ## Loads and parses JSON card data from file system.
 ## @param card_name: Card identifier (filename without .json extension)
 ## @returns: Dictionary containing card data or empty dict if loading failed
-func _load_card_info(card_name: String) -> Dictionary:
-	var json_path = card_info_dir + "/" + card_name + ".json"
+func _load_card_info(card_name: String) -> Dictionary[String, String]:
+	var json_path := card_info_dir + "/" + card_name + ".json"
 	if !FileAccess.file_exists(json_path):
 		return {}
 
 	# Read JSON file content
-	var file = FileAccess.open(json_path, FileAccess.READ)
-	var json_string = file.get_as_text()
+	var file := FileAccess.open(json_path, FileAccess.READ)
+	var json_string := file.get_as_text()
 	file.close()
 
 	# Parse JSON with error handling
-	var json = JSON.new()
-	var error = json.parse(json_string)
+	var json := JSON.new()
+	var error := json.parse(json_string)
 	if error != OK:
 		push_error("Failed to parse JSON: %s" % json_path)
 		return {}
+	
+	var json_data := json.data
+	if typeof(json_data) != TYPE_DICTIONARY:
+		push_error("Unexpected JSON data: %s" % json_path)
+		return {}
+	
+	var card_info: Dictionary[String, String] = {}
+	for key in json_data:
+		card_info[str(key)] = str(json_data[key])
 
-	return json.data
+	return card_info
 
 
 ## Loads image texture from file path with error handling.
 ## @param image_path: Full path to image file
 ## @returns: Loaded Texture2D or null if loading failed
 func _load_image(image_path: String) -> Texture2D:
-	var texture = load(image_path) as Texture2D
+	var texture := load(image_path) as Texture2D
 	if texture == null:
 		push_error("Failed to load image resource: %s" % image_path)
 		return null
@@ -182,8 +191,8 @@ func _load_image(image_path: String) -> Texture2D:
 ## @param target: CardContainer to receive the card
 ## @param card_info: Dictionary of card data from JSON
 ## @returns: Configured Card instance or null if addition failed
-func _create_card_node(card_name: String, front_image: Texture2D, target: CardContainer, card_info: Dictionary) -> Card:
-	var card = _generate_card(card_info)
+func _create_card_node(card_name: String, front_image: Texture2D, target: CardContainer, card_info: Dictionary[String, String]) -> Card:
+	var card := _generate_card(card_info)
 	
 	# Validate container can accept this card
 	if !target._card_can_be_added([card]):
@@ -196,7 +205,7 @@ func _create_card_node(card_name: String, front_image: Texture2D, target: CardCo
 	card.card_size = card_size
 	
 	# Add to scene tree and container
-	var cards_node = target.get_node("Cards")
+	var cards_node := target.get_node("Cards")
 	cards_node.add_child(card)
 	target.add_card(card)
 	
@@ -210,7 +219,7 @@ func _create_card_node(card_name: String, front_image: Texture2D, target: CardCo
 ## Instantiates a new card from the default card scene.
 ## @param _card_info: Card data dictionary (reserved for future customization)
 ## @returns: New Card instance or null if scene is invalid
-func _generate_card(_card_info: Dictionary) -> Card:
+func _generate_card(_card_info: Dictionary[String, String]) -> Card:
 	if default_card_scene == null:
 		push_error("default_card_scene is not assigned!")
 		return null

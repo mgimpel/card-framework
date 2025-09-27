@@ -37,7 +37,7 @@ extends Node
 # Core factory data and configuration
 ## Dictionary cache for storing preloaded card data to improve performance
 ## Key: card identifier (String), Value: card data (typically Dictionary)
-var preloaded_cards = {}
+var preloaded_cards: Dictionary[String, Dictionary] = {}
 
 ## Default size for cards created by this factory
 ## Applied to all created cards unless overridden

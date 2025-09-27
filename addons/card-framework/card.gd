@@ -45,7 +45,7 @@ static var holding_card_count: int = 0
 
 
 # Card data and container reference
-var card_info: Dictionary
+var card_info: Dictionary[String, String]
 var card_container: CardContainer
 
 

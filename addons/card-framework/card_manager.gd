@@ -42,7 +42,7 @@ const CARD_ACCEPT_TYPE = "card"
 
 # Core system components
 var card_factory: CardFactory
-var card_container_dict: Dictionary = {}
+var card_container_dict: Dictionary[int, CardContainer] = {}
 var history: Array[HistoryElement] = []
 
 
@@ -68,7 +68,7 @@ func undo() -> void:
 	if history.is_empty():
 		return
 	
-	var last = history.pop_back()
+	var last: HistoryElement = history.pop_back()
 	if last.from != null:
 		last.from.undo(last.cards, last.from_indices)
 
@@ -88,22 +88,22 @@ func _delete_card_container(id: int) -> void:
 
 
 # Handles dropped cards by finding suitable container
-func _on_drag_dropped(cards: Array) -> void:
+func _on_drag_dropped(cards: Array[Card]) -> void:
 	if cards.is_empty():
 		return
 	
 	# Store original mouse_filter states and temporarily disable input during drop processing
-	var original_mouse_filters = {}
+	var original_mouse_filters: Dictionary[Card, MouseFilter] = {}
 	for card in cards:
 		original_mouse_filters[card] = card.mouse_filter
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		
 	# Find first container that accepts the cards
 	for key in card_container_dict.keys():
-		var card_container = card_container_dict[key]
-		var result = card_container.check_card_can_be_dropped(cards)
+		var card_container := card_container_dict[key]
+		var result := card_container.check_card_can_be_dropped(cards)
 		if result:
-			var index = card_container.get_partition_index()
+			var index := card_container.get_partition_index()
 			# Restore mouse_filter before move_cards (DraggableObject will manage it from here)
 			for card in cards:
 				card.mouse_filter = original_mouse_filters[card]
@@ -116,14 +116,14 @@ func _on_drag_dropped(cards: Array) -> void:
 		card.return_card()
 
 
-func _add_history(to: CardContainer, cards: Array) -> void:
-	var from = null
-	var from_indices = []
+func _add_history(to: CardContainer, cards: Array[Card]) -> void:
+	var from: CardContainer = null
+	var from_indices: Array[int] = []
 	
 	# Record indices FIRST, before any movement operations
 	for i in range(cards.size()):
-		var c = cards[i]
-		var current = c.card_container
+		var c := cards[i]
+		var current := c.card_container
 		if i == 0:
 			from = current
 		else:
@@ -133,13 +133,13 @@ func _add_history(to: CardContainer, cards: Array) -> void:
 		
 		# Record index immediately to avoid race conditions
 		if from != null:
-			var original_index = from._held_cards.find(c)
+			var original_index := from._held_cards.find(c)
 			if original_index == -1:
 				push_error("Card not found in source container during history recording!")
 				return
 			from_indices.append(original_index)
 	
-	var history_element = HistoryElement.new()
+	var history_element := HistoryElement.new()
 	history_element.from = from
 	history_element.to = to
 	history_element.cards = cards
@@ -148,7 +148,7 @@ func _add_history(to: CardContainer, cards: Array) -> void:
 
 
 func _is_valid_directory(path: String) -> bool:
-	var dir = DirAccess.open(path)
+	var dir := DirAccess.open(path)
 	return dir != null
 
 
@@ -157,7 +157,7 @@ func _pre_process_exported_variables() -> bool:
 		push_error("CardFactory is not assigned! Please set it in the CardManager Inspector.")
 		return false
 	
-	var factory_instance = card_factory_scene.instantiate() as CardFactory
+	var factory_instance := card_factory_scene.instantiate() as CardFactory
 	if factory_instance == null:
 		push_error("Failed to create an instance of CardFactory! CardManager imported an incorrect card factory scene.")
 		return false

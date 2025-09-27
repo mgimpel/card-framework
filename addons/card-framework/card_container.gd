@@ -48,7 +48,7 @@ static var next_id: int = 0
 
 # Container identification and management
 var unique_id: int
-var drop_zone_scene = preload("drop_zone.tscn")
+var drop_zone_scene: PackedScene = preload("drop_zone.tscn")
 var drop_zone: DropZone = null
 
 # Card collection and state
@@ -76,7 +76,7 @@ func _ready() -> void:
 		cards_node.mouse_filter = Control.MOUSE_FILTER_PASS
 		add_child(cards_node)
 	
-	var parent = get_parent()
+	var parent := get_parent()
 	if parent is CardManager:
 		card_manager = parent
 	else:
@@ -119,7 +119,7 @@ func add_card(card: Card, index: int = -1) -> void:
 ## @param card: The card to remove
 ## @returns: True if card was removed, false if not found
 func remove_card(card: Card) -> bool:
-	var index = _held_cards.find(card)
+	var index := _held_cards.find(card)
 	if index != -1:
 		_held_cards.remove_at(index)
 	else:
@@ -146,7 +146,7 @@ func clear_cards() -> void:
 
 ## Checks if the specified cards can be dropped into this container.
 ## Override _card_can_be_added() in subclasses for custom rules.
-func check_card_can_be_dropped(cards: Array) -> bool:
+func check_card_can_be_dropped(cards: Array[Card]) -> bool:
 	if not enable_drop_zone:
 		return false
 
@@ -163,10 +163,10 @@ func check_card_can_be_dropped(cards: Array) -> bool:
 
 
 func get_partition_index() -> int:
-	var vertical_index = drop_zone.get_vertical_layers()
+	var vertical_index := drop_zone.get_vertical_layers()
 	if vertical_index != -1:
 		return vertical_index
-	var horizontal_index = drop_zone.get_horizontal_layers()
+	var horizontal_index := drop_zone.get_horizontal_layers()
 	if horizontal_index != -1:
 		return horizontal_index
 	return -1
@@ -176,7 +176,7 @@ func get_partition_index() -> int:
 func shuffle() -> void:
 	_fisher_yates_shuffle(_held_cards)
 	for i in range(_held_cards.size()):
-		var card = _held_cards[i]
+		var card := _held_cards[i]
 		cards_node.move_child(card, i)
 	update_card_ui()
 
@@ -186,7 +186,7 @@ func shuffle() -> void:
 ## @param index: Target position (-1 for end)
 ## @param with_history: Whether to record for undo
 ## @returns: True if move was successful
-func move_cards(cards: Array, index: int = -1, with_history: bool = true) -> bool:
+func move_cards(cards: Array[Card], index: int = -1, with_history: bool = true) -> bool:
 	if not _card_can_be_added(cards):
 		return false
 	# XXX: If the card is already in the container, we don't add it into the history.
@@ -199,7 +199,7 @@ func move_cards(cards: Array, index: int = -1, with_history: bool = true) -> boo
 ## Restores cards to their original positions with index precision.
 ## @param cards: Cards to restore
 ## @param from_indices: Original indices for precise positioning
-func undo(cards: Array, from_indices: Array = []) -> void:
+func undo(cards: Array[Card], from_indices: Array[int] = []) -> void:
 	# Validate input parameters
 	if not from_indices.is_empty() and cards.size() != from_indices.size():
 		push_error("Mismatched cards and indices arrays in undo operation!")
@@ -221,9 +221,9 @@ func undo(cards: Array, from_indices: Array = []) -> void:
 			return
 	
 	# Check if indices are consecutive (bulk move scenario)
-	var sorted_indices = from_indices.duplicate()
+	var sorted_indices: Array[int] = from_indices.duplicate()
 	sorted_indices.sort()
-	var is_consecutive = true
+	var is_consecutive := true
 	for i in range(1, sorted_indices.size()):
 		if sorted_indices[i] != sorted_indices[i-1] + 1:
 			is_consecutive = false
@@ -231,10 +231,10 @@ func undo(cards: Array, from_indices: Array = []) -> void:
 	
 	if is_consecutive and sorted_indices.size() > 1:
 		# Bulk consecutive restore: maintain original relative order
-		var lowest_index = sorted_indices[0]
+		var lowest_index := sorted_indices[0]
 		
 		# Sort cards by their original indices to maintain proper order
-		var card_index_pairs = []
+		var card_index_pairs: Array[Dictionary] = []
 		for i in range(cards.size()):
 			card_index_pairs.append({"card": cards[i], "index": from_indices[i]})
 		
@@ -243,11 +243,11 @@ func undo(cards: Array, from_indices: Array = []) -> void:
 		
 		# Insert all cards starting from the lowest index
 		for i in range(card_index_pairs.size()):
-			var target_index = min(lowest_index + i, _held_cards.size())
+			var target_index := min(lowest_index + i, _held_cards.size()) as int
 			_move_cards([card_index_pairs[i].card], target_index)
 	else:
 		# Non-consecutive indices: restore individually (original logic)
-		var card_index_pairs = []
+		var card_index_pairs: Array[Dictionary] = []
 		for i in range(cards.size()):
 			card_index_pairs.append({"card": cards[i], "index": from_indices[i], "original_order": i})
 		
@@ -260,7 +260,7 @@ func undo(cards: Array, from_indices: Array = []) -> void:
 		
 		# Restore each card to its original index
 		for pair in card_index_pairs:
-			var target_index = min(pair.index, _held_cards.size())  # Clamp to valid range
+			var target_index := min(pair.index, _held_cards.size()) as int  # Clamp to valid range
 			_move_cards([pair.card], target_index)
 
 
@@ -269,13 +269,13 @@ func hold_card(card: Card) -> void:
 		_holding_cards.append(card)
 
 
-func release_holding_cards():
+func release_holding_cards() -> void:
 	if _holding_cards.is_empty():
 		return
 	for card in _holding_cards:
 		# Transition from HOLDING to IDLE state
 		card.change_state(DraggableObject.DraggableState.IDLE)
-	var copied_holding_cards = _holding_cards.duplicate()
+	var copied_holding_cards := _holding_cards.duplicate() as Array[Card]
 	if card_manager != null:
 		card_manager._on_drag_dropped(copied_holding_cards)
 	_holding_cards.clear()
@@ -285,11 +285,11 @@ func get_string() -> String:
 	return "card_container: %d" % unique_id
 
 
-func on_card_move_done(_card: Card):
+func on_card_move_done(_card: Card) -> void:
 	pass
 
 
-func on_card_pressed(_card: Card):
+func on_card_pressed(_card: Card) -> void:
 	pass
 
 func _assign_card_to_container(card: Card) -> void:
@@ -318,18 +318,18 @@ func _move_to_card_container(_card: Card, index: int = -1) -> void:
 	add_card(_card, index)
 
 
-func _fisher_yates_shuffle(array: Array) -> void:
+func _fisher_yates_shuffle(array: Array[Card]) -> void:
 	for i in range(array.size() - 1, 0, -1):
-		var j = randi() % (i + 1)
-		var temp = array[i]
+		var j := randi() % (i + 1)
+		var temp := array[i]
 		array[i] = array[j]
 		array[j] = temp
 
 
-func _move_cards(cards: Array, index: int = -1) -> void:
-	var cur_index = index
+func _move_cards(cards: Array[Card], index: int = -1) -> void:
+	var cur_index := index
 	for i in range(cards.size() - 1, -1, -1):
-		var card = cards[i]
+		var card := cards[i]
 		if cur_index == -1:
 			_move_to_card_container(card)
 		else:
@@ -337,7 +337,7 @@ func _move_cards(cards: Array, index: int = -1) -> void:
 			cur_index += 1
 
 
-func _card_can_be_added(_cards: Array) -> bool:
+func _card_can_be_added(_cards: Array[Card]) -> bool:
 	return true
 
 
@@ -356,7 +356,7 @@ func _update_target_positions() -> void:
 	pass
 
 
-func _move_object(target: Node, to: Node, index: int = -1) -> void:
+func _move_object(target: Control, to: Control, index: int = -1) -> void:
 	if target.get_parent() == to:
 		# If already the same parent, just change the order with move_child
 		if index != -1:
@@ -366,7 +366,7 @@ func _move_object(target: Node, to: Node, index: int = -1) -> void:
 			to.move_child(target, to.get_child_count() - 1)
 		return
 
-	var global_pos = target.global_position
+	var global_pos := target.global_position
 	if target.get_parent() != null:
 		target.get_parent().remove_child(target)
 	if index != -1:
@@ -378,7 +378,7 @@ func _move_object(target: Node, to: Node, index: int = -1) -> void:
 
 
 func _remove_object(target: Node) -> void:
-	var parent = target.get_parent()
+	var parent := target.get_parent()
 	if parent != null:
 		parent.remove_child(target)
 	target.queue_free()

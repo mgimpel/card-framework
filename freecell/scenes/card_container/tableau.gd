@@ -20,33 +20,33 @@ func is_empty() -> bool:
 	return _held_cards.is_empty()
 
 
-func on_card_pressed(card: Card):
+func on_card_pressed(card: Card) -> void:
 	freecell_game.hold_multiple_cards(card, self)
 
 
 func get_string() -> String:
 	var card_info := ""
-	var card = get_top_card()
+	var card := get_top_card()
 	if card != null:
 		card_info = card.get_string()
-	var held_card_size = _held_cards.size()
+	var held_card_size := _held_cards.size()
 	return "Tableau: %d, Top Card: %s, Size: %d" % [unique_id, card_info, held_card_size]
 
 
-func move_cards(cards: Array, index: int = -1, with_history: bool = true) -> bool:
-	var result = super.move_cards(cards, index, with_history)
+func move_cards(cards: Array[Card], index: int = -1, with_history: bool = true) -> bool:
+	var result := super.move_cards(cards, index, with_history)
 	if result:
 		freecell_game.move_count += 1
 		freecell_game.update_all_tableaus_cards_can_be_interactwith(true)
 	return result
 
 
-func init_move_cards(cards: Array, with_history: bool = true) -> void:
+func init_move_cards(cards: Array[Card], with_history: bool = true) -> void:
 	super.move_cards(cards, -1, with_history)
 	freecell_game.update_all_tableaus_cards_can_be_interactwith(true)
 
 
-func undo(cards: Array, from_indices: Array = []) -> void:
+func undo(cards: Array[Card], from_indices: Array[int] = []) -> void:
 	super.undo(cards, from_indices)
 	freecell_game.undo_count += 1
 	freecell_game.update_all_tableaus_cards_can_be_interactwith(false)
@@ -58,14 +58,14 @@ func get_top_card() -> PlayingCard:
 	return _held_cards.back() as PlayingCard
 
 
-func _card_can_be_added(_cards: Array) -> bool:
+func _card_can_be_added(_cards: Array[Card]) -> bool:
 	if _cards.size() > freecell_game.maximum_number_of_super_move(self):
 		return false
 	if _cards.is_empty():
 		return false
 
-	var card = _cards[-1]
-	var target_card = card as PlayingCard
+	var card := _cards[-1]
+	var target_card := card as PlayingCard
 	if target_card == null:
 		return false
 		
@@ -75,7 +75,7 @@ func _card_can_be_added(_cards: Array) -> bool:
 	if is_empty():
 		return true
 	
-	var current_top_card = _held_cards.back() as PlayingCard
+	var current_top_card := _held_cards.back() as PlayingCard
 	if current_top_card.number == PlayingCard.Number._A:
 		return false
 		
@@ -89,23 +89,24 @@ func _card_can_be_added(_cards: Array) -> bool:
 
 
 func _calculate_offset(index: int) -> Vector2:
-	var total_cards_in_stack = _held_cards.size()
-	var total_display_cards = min(total_cards_in_stack, max_stack_display)
-	var total_gaps = total_display_cards - 1
+	var total_cards_in_stack := _held_cards.size()
+	var total_display_cards := min(total_cards_in_stack, max_stack_display) as int
+	var total_gaps := total_display_cards - 1
 
-	var adjusted_gap = stack_display_gap
+	var adjusted_gap := stack_display_gap
 	if total_gaps > 0:
 		if max_stack_length != 0:
+			@warning_ignore("integer_division")
 			adjusted_gap = min(stack_display_gap, max_stack_length / total_gaps)
 		else:
 			adjusted_gap = stack_display_gap
 	else:
 		adjusted_gap = 0
 
-	var actual_index = min(index, max_stack_display - 1)
-	var offset_value = actual_index * adjusted_gap
+	var actual_index := min(index, max_stack_display - 1) as int
+	var offset_value := actual_index * adjusted_gap
 
-	var offset = Vector2()
+	var offset := Vector2()
 	match layout:
 		PileDirection.UP:
 			offset.y -= offset_value

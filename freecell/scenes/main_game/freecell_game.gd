@@ -5,21 +5,21 @@ extends Node
 enum GameState {WIN = 1, LOSE = 2, PLAYING = 3}
 
 
-const suits = ["Heart", "Spade", "Diamond", "Club"]
-const auto_move_timer_wating_time = 0.2
-const game_generating_timer_waiting_time = 0.05
+const suits := ["Heart", "Spade", "Diamond", "Club"]
+const auto_move_timer_wating_time := 0.2
+const game_generating_timer_waiting_time := 0.05
 
 
-var freecells := []
-var foundations := []
-var tableaus := []
-var all_cards := []
+var freecells: Array[FreeCell] = []
+var foundations: Array[Foundation] = []
+var tableaus: Array[Tableau] = []
+var all_cards: Array[Card] = []
 var card_factory: FreecellCardFactory
 var game_seed := 0
 var is_creating_new_game := false
 var auto_move_timer: Timer
-var auto_move_target := {}
-var auto_moving_map := {}
+var auto_move_target: Dictionary[String, Control] = {}
+var auto_moving_map: Dictionary[PlayingCard, Pile] = {}
 var game_generating_timer: Timer
 var elapsed_time := 0
 var game_timer: Timer
@@ -29,17 +29,17 @@ var score := 0
 var game_state := GameState.PLAYING
 var is_game_running := false
 var record_manager: RecordManager
-var menu_scene = load("res://freecell/scenes/menu/menu.tscn")
+var menu_scene: PackedScene = load("res://freecell/scenes/menu/menu.tscn")
 
 
-@onready var card_manager = $CardManager
-@onready var game_generator = $GameGenerator
-@onready var start_position = $CardManager/StartPosition
-@onready var time_display = $Time
-@onready var score_display = $Score
-@onready var restart_game_dialog = $RestartGameDialog
-@onready var go_to_menu_dialog = $GoToMenuDialog
-@onready var information = $Information
+@onready var card_manager: CardManager = $CardManager
+@onready var game_generator: GameGenerator = $GameGenerator
+@onready var start_position: Pile = $CardManager/StartPosition
+@onready var time_display: Button = $Time
+@onready var score_display: Button = $Score
+@onready var restart_game_dialog: Node = $RestartGameDialog
+@onready var go_to_menu_dialog: Node = $GoToMenuDialog
+@onready var information: TextEdit = $Information
 
 
 func _ready() -> void:
@@ -53,21 +53,20 @@ func _ready() -> void:
 
 
 func maximum_number_of_super_move(tableau: Tableau) -> int:
-	var empty_freecells = _count_remaining_freecell()
-	var empty_tableaus = _count_remaining_tableaus()
-	var result = pow(2, empty_tableaus) * (empty_freecells + 1)
+	var empty_freecells := _count_remaining_freecell()
+	var empty_tableaus := _count_remaining_tableaus()
+	var result := pow(2, empty_tableaus) * (empty_freecells + 1)
 	if tableau != null and tableau.is_empty():
-		@warning_ignore("integer_division")
 		result = result / 2
-	return result
+	return int(result)
 
 
 func hold_multiple_cards(card: Card, tableau: Tableau) -> void:
 	var current_card: Card = null
-	var holding_card_list := []
-	var max_super_move = maximum_number_of_super_move(null)
+	var holding_card_list: Array[Card] = []
+	var max_super_move := maximum_number_of_super_move(null)
 	for i in range(tableau._held_cards.size() - 1, -1, -1):
-		var target_card = tableau._held_cards[i]
+		var target_card := tableau._held_cards[i]
 		if current_card == null:
 			current_card = target_card
 			holding_card_list.append(current_card)
@@ -136,11 +135,11 @@ func new_game() -> void:
 
 
 func _get_game_state() -> GameState:
-	var win_condition = _check_win_condition()
+	var win_condition := _check_win_condition()
 	if win_condition:
 		return GameState.WIN
 	
-	var lose_condition = _check_lose_condition()
+	var lose_condition := _check_lose_condition()
 	if lose_condition:
 		return GameState.LOSE
 	
@@ -150,11 +149,11 @@ func _get_game_state() -> GameState:
 func _update_cards_can_be_interactwith(tableau: Tableau) -> void:
 	var current_card: Card = null
 	var count := 0
-	var max_super_move = maximum_number_of_super_move(null)
+	var max_super_move := maximum_number_of_super_move(null)
 	for card in tableau._held_cards:
 		card.can_be_interacted_with = false
 	for i in range(tableau._held_cards.size() - 1, -1, -1):
-		var target_card = tableau._held_cards[i]
+		var target_card := tableau._held_cards[i]
 		if current_card == null:
 			current_card = target_card
 			target_card.can_be_interacted_with = true
@@ -186,10 +185,10 @@ func _get_foundation(suit: PlayingCard.Suit) -> Foundation:
 
 
 func _get_minimum_number(a: Foundation, b: Foundation) -> int:
-	var a_top_card = a.get_top_card()
-	var b_top_card = b.get_top_card()
-	var a_top_number = 0
-	var b_top_number = 0
+	var a_top_card := a.get_top_card()
+	var b_top_card := b.get_top_card()
+	var a_top_number := 0
+	var b_top_number := 0
 	if a_top_card != null:
 		a_top_number = a_top_card.number
 	if b_top_card != null:
@@ -206,27 +205,27 @@ func _get_minimum_number_in_foundation(card_color: PlayingCard.CardColor) -> int
 		return -1
 
 
-func _check_auto_move(container) -> void:
+func _check_auto_move(container: Pile) -> void:
 	if container._held_cards.is_empty():
 		return
-	var top_card = container._held_cards.back()
-	var suit = top_card.suit
-	var card_color = top_card.card_color
+	var top_card := container._held_cards.back() as PlayingCard
+	var suit := top_card.suit
+	var card_color := top_card.card_color
 	var opposite_color := PlayingCard.CardColor.NONE
 	if card_color == PlayingCard.CardColor.BLACK:
 		opposite_color = PlayingCard.CardColor.RED
 	elif card_color == PlayingCard.CardColor.RED:
 		opposite_color = PlayingCard.CardColor.BLACK
 	
-	var foundation = _get_foundation(suit)
-	var top_card_of_foundation = foundation.get_top_card()
+	var foundation := _get_foundation(suit)
+	var top_card_of_foundation := foundation.get_top_card()
 	
 	var result := false
 	if top_card_of_foundation == null:
 		if top_card.number == 1:
 			result = true
 	else:
-		var min_other_color_number = _get_minimum_number_in_foundation(opposite_color)
+		var min_other_color_number := _get_minimum_number_in_foundation(opposite_color)
 		if top_card_of_foundation.is_next_number(top_card) and top_card.number <= min_other_color_number + 1:
 			result = true
 	
@@ -235,26 +234,25 @@ func _check_auto_move(container) -> void:
 			"card": top_card,
 			"foundation": foundation
 		}
-		if auto_moving_map.find_key(top_card):
-			return
-		auto_moving_map[top_card] = foundation
+		if !auto_moving_map.has(top_card):
+			auto_moving_map[top_card] = foundation
 		_set_all_card_control(true)
 		auto_move_timer.start(auto_move_timer_wating_time)
 
 
 func _set_containers() -> void:
 	for i in range(1, 5):
-		var freecell = card_manager.get_node("Freecell_%d" % i)
+		var freecell := card_manager.get_node("Freecell_%d" % i)
 		freecells.append(freecell)
 		freecell.freecell_game = self
 		
 	for suit in suits:
-		var foundation = card_manager.get_node("Foundation_%s" % suit)
+		var foundation := card_manager.get_node("Foundation_%s" % suit)
 		foundations.append(foundation)
 		foundation.freecell_game = self
 		
 	for i in range(1, 9):
-		var tableau = card_manager.get_node("Tableau_%d" % i)
+		var tableau := card_manager.get_node("Tableau_%d" % i)
 		tableaus.append(tableau)
 		tableau.freecell_game = self
 
@@ -274,7 +272,7 @@ func _set_game_generating_timer() -> void:
 	add_child(game_generating_timer)
 
 
-func _set_elapsed_time(time) -> void:
+func _set_elapsed_time(time: int) -> void:
 	elapsed_time = time
 	time_display.text = str(elapsed_time)
 
@@ -321,7 +319,7 @@ func _update_score() -> void:
 
 
 func _set_record_manager() -> void:
-	var node = get_tree().root.get_node("RecordManager")
+	var node := get_tree().root.get_node("RecordManager")
 	record_manager = node as RecordManager
 
 
@@ -345,19 +343,19 @@ func _on_button_menu_pressed() -> void:
 
 
 func _set_ui_buttons() -> void:
-	var button_restart_game = $ButtonRestartGame
+	var button_restart_game := $ButtonRestartGame
 	button_restart_game.connect("pressed", _on_button_restart_game_pressed)
-	var button_undo = $ButtonUndo
+	var button_undo := $ButtonUndo
 	button_undo.connect("pressed", _on_button_undo_pressed)
-	var button_menu = $ButtonMenu
+	var button_menu := $ButtonMenu
 	button_menu.connect("pressed", _on_button_menu_pressed)
 	restart_game_dialog.connect("confirmed", new_game)
 	go_to_menu_dialog.connect("confirmed", _go_to_menu)
 
 
 func _on_timeout() -> void:
-	var target_card = auto_move_target["card"]
-	var target_foundation = auto_move_target["foundation"]
+	var target_card := auto_move_target["card"] as Card
+	var target_foundation := auto_move_target["foundation"] as Foundation
 	target_foundation.auto_move_cards([target_card])
 	auto_moving_map.erase(target_card)
 	if auto_moving_map.size() == 0:
@@ -382,7 +380,7 @@ func _reset_cards_in_game() -> void:
 
 
 func _count_remaining_freecell() -> int:
-	var count = 0
+	var count := 0
 	for freecell in freecells:
 		if freecell.is_empty():
 			count += 1
@@ -390,7 +388,7 @@ func _count_remaining_freecell() -> int:
 
 
 func _count_remaining_tableaus() -> int:
-	var count = 0
+	var count := 0
 	for tableau in tableaus:
 		if tableau.is_empty():
 			count += 1
@@ -398,22 +396,22 @@ func _count_remaining_tableaus() -> int:
 
 
 func _generate_cards() -> void:
-	var deck = game_generator.deal(game_seed)
-	var cards_str = game_generator.generate_cards(deck)
+	var deck := game_generator.deal(game_seed)
+	var cards_str := game_generator.generate_cards(deck)
 	
 	for tableau in tableaus:
 		tableau.is_initializing = true
 	
 	for i in range(cards_str.size() - 1, -1, -1):
-		var card_name = cards_str[i]
-		var card = card_factory.create_card(card_name, start_position)
+		var card_name := cards_str[i]
+		var card := card_factory.create_card(card_name, start_position)
 		all_cards.append(card)
 
 	var current_index := 0
 	var offset := tableaus.size()
 	for i in range(start_position._held_cards.size() - 1, -1, -1):
-		var card = start_position._held_cards[i]
-		var tableau = tableaus[current_index]
+		var card := start_position._held_cards[i]
+		var tableau := tableaus[current_index]
 		tableau.init_move_cards([card], false)
 		current_index = (current_index + 1) % offset
 		game_generating_timer.start(game_generating_timer_waiting_time)
@@ -428,7 +426,7 @@ func _go_to_menu() -> void:
 	if is_game_running:
 		game_state = GameState.LOSE
 		_end_game()
-	var menu_instance = menu_scene.instantiate()
+	var menu_instance := menu_scene.instantiate()
 	get_tree().root.add_child(menu_instance)
 	get_node("/root/FreecellGame").queue_free()
 	
@@ -460,7 +458,7 @@ func _check_card_can_be_anywhere(card: Card) -> bool:
 
 func _check_lose_condition() -> bool:
 	for tableau in tableaus:
-		var top_card = tableau.get_top_card()
+		var top_card := tableau.get_top_card()
 		if top_card == null:
 			return false
 		if _check_card_can_be_anywhere(top_card):
@@ -476,7 +474,7 @@ func _check_lose_condition() -> bool:
 
 
 func _update_information() -> void:
-	var text = "seed: " + str(game_seed) + \
+	var text := "seed: " + str(game_seed) + \
 		",  move: " + str(move_count) + \
 		",  undo: " + str(undo_count) + \
 		",  time: " + str(elapsed_time) + \
@@ -495,8 +493,8 @@ func _update_information() -> void:
 
 
 func _show_result_popup(is_win: bool) -> void:
-	var dialog = $ResultDialog  # The AcceptDialog node
-	var body_text = dialog.get_node("BodyText") as RichTextLabel
+	var dialog := $ResultDialog as AcceptDialog  # The AcceptDialog node
+	var body_text := dialog.get_node("BodyText") as RichTextLabel
 	
 	if is_win:
 		dialog.title = "Congratulations!"
@@ -506,13 +504,13 @@ func _show_result_popup(is_win: bool) -> void:
 	body_text.bbcode_enabled = true
 	body_text.clear()
 
-	var win_text = ""
+	var win_text := ""
 	if is_win:
 		win_text = "[color=green]Win[/color]"
 	else:
 		win_text = "[color=red]Lose[/color]"
 	
-	var text_body = ""
+	var text_body := ""
 	text_body += "Result:\t\t%s\n" % win_text
 	text_body += "Seed:\t\t\t%d\n" % game_seed
 	text_body += "Time:\t\t\t%d\n" % elapsed_time

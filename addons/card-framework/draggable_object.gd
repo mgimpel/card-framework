@@ -88,7 +88,7 @@ var move_tween: Tween
 var hover_tween: Tween
 
 # State transition rules
-var allowed_transitions = {
+var allowed_transitions := {
 	DraggableState.IDLE: [DraggableState.HOVERING, DraggableState.HOLDING, DraggableState.MOVING],
 	DraggableState.HOVERING: [DraggableState.IDLE, DraggableState.HOLDING, DraggableState.MOVING],
 	DraggableState.HOLDING: [DraggableState.IDLE, DraggableState.MOVING],
@@ -125,7 +125,7 @@ func change_state(new_state: DraggableState) -> bool:
 	# Clean up previous state
 	_exit_state(current_state)
 	
-	var old_state = current_state
+	var old_state := current_state
 	current_state = new_state
 	
 	# Enter new state
@@ -236,7 +236,7 @@ func _start_hover_animation() -> void:
 	hover_tween.set_parallel(true)  # Allow multiple properties to animate simultaneously
 	
 	# Animate position (hover up)
-	var target_position = Vector2(position.x, position.y - hover_distance)
+	var target_position := Vector2(position.x, position.y - hover_distance)
 	hover_tween.tween_property(self, "position", target_position, hover_duration)
 	
 	# Animate scale
@@ -345,8 +345,8 @@ func move(target_destination: Vector2, degree: float) -> void:
 	is_moving_to_destination = true
 	
 	# Smooth Tween-based movement with dynamic duration based on moving_speed
-	var distance = global_position.distance_to(target_destination)
-	var duration = distance / moving_speed
+	var distance := global_position.distance_to(target_destination)
+	var duration := distance / moving_speed
 	
 	move_tween = create_tween()
 	move_tween.tween_property(self, "global_position", target_destination, duration)
